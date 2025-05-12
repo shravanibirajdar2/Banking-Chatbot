@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Banking Chatbot</title>
+  <style>
+    /* Full-page layout and centering */
+    body, html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #e6f0ff, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    /* Wrapper to center everything */
+    .main-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Main chat container */
+    .main-container {
+      width: 600px;
+      height: 85vh;
+      background-color: #ffffff;
+      border: 2px solid #d3e0ea;
+      border-radius: 12px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    /* Header */
+    .chat-header {
+      padding: 20px;
+      background-color: #0077b6;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      border-bottom: 2px solid #023e8a;
+    }
+    
+    /* Chat window */
+    .chat-window {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #f5f9ff;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    /* Message area */
+    .input-area {
+      display: flex;
+      padding: 12px;
+      border-top: 2px solid #d3e0ea;
+      background-color: #ffffff;
+    }
+    
+    /* Text area input */
+    .input-area textarea {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      resize: none;
+      outline: none;
+      background-color: #f1f5f9;
+      color: #000;
+    }
+    
+    /* Send button */
+    .input-area button {
+      margin-left: 10px;
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      padding: 0 20px;
+      border-radius: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    
+    .input-area button:hover {
+      background-color: #023e8a;
+    }
+    
+    /* Message bubble wrappers */
+    .message-wrapper {
+      display: flex;
+      width: 100%;
+    }
+    
+    .message-wrapper.user {
+      justify-content: flex-end;
+    }
+    
+    .message-wrapper.bot {
+      justify-content: flex-start;
+    }
+    
+    /* Message bubbles */
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      font-size: 15px;
+      line-height: 1.5;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .message-wrapper.user .message {
+      background-color: #0077b6;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+    
+    .message-wrapper.bot .message {
+      background-color: #e2ecf8;
+      color: #000;
+      border-bottom-left-radius: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="main-container">
+      <div class="chat-header">💰 Banking Chatbot</div>
+      <div class="chat-window" id="chat-window">
+        <!-- Initial welcome message -->
+        <div class="message-wrapper bot">
+          <div class="message">Hello! I'm your banking assistant. How can I help you today?</div>
+        </div>
+      </div>
+      <div class="input-area">
+        <textarea id="user-input" placeholder="Type your message..." rows="1"></textarea>
+        <button id="send-button">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Wait for the DOM to fully load
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatWindow = document.getElementById("chat-window");
+      const userInput = document.getElementById("user-input");
+      const sendButton = document.getElementById("send-button");
+      
+      // Sample responses for demo purposes
+      const botResponses = {
+        "balance": "Your current balance is $3,458.92",
+        "transfer": "I can help you transfer money. Please provide the recipient's information and the amount.",
+        "account": "You have 3 accounts with us: Checking (****1234), Savings (****5678), and Credit Card (****9012).",
+        "help": "I can help with checking your balance, transferring money, viewing account information, and answering banking questions.",
+        "hours": "Our branches are open Monday-Friday from 9am to 5pm, and Saturday from 9am to 12pm."
+      };
+      
+      // Default fallback response
+      const defaultResponse = "I'm sorry, I don't have information about that. Would you like to speak with a human representative?";
+      
+      // Function to send message
+      function sendMessage() {
+        const message = userInput.value.trim();
+        if (message === "") return;
+        
+        // Add user message to chat
+        appendMessage("user", message);
+        userInput.value = "";
+        
+        // Simulate typing indicator
+        const typingIndicator = document.createElement("div");
+        typingIndicator.classList.add("message-wrapper", "bot");
+        typingIndicator.innerHTML = '<div class="message">...</div>';
+        chatWindow.appendChild(typingIndicator);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+        
+        // Process the message and respond after a short delay
+        setTimeout(() => {
+          chatWindow.removeChild(typingIndicator);
+          
+          // Generate bot response
+          let response = defaultResponse;
+          
+          // Check if the message contains any keywords
+          const messageLower = message.toLowerCase();
+          for (const [keyword, reply] of Object.entries(botResponses)) {
+            if (messageLower.includes(keyword)) {
+              response = reply;
+              break;
+            }
+          }
+          
+          appendMessage("bot", response);
+        }, 1000);
+      }
+      
+      // Function to append a message to the chat
+      function appendMessage(sender, text) {
+        const messageWrapper = document.createElement("div");
+        messageWrapper.classList.add("message-wrapper", sender);
+        
+        const messageBubble = document.createElement("div");
+        messageBubble.classList.add("message");
+        messageBubble.innerText = text;
+        
+        messageWrapper.appendChild(messageBubble);
+        chatWindow.appendChild(messageWrapper);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
+      
+      // Event listeners
+      sendButton.addEventListener("click", sendMessage);
+      
+      userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      
+      // Auto-resize textarea
+      userInput.addEventListener("input", () => {
+        userInput.style.height = "auto";
+        userInput.style.height = (userInput.scrollHeight) + "px";
+      });
+      
+      // Focus input on load
+      userInput.focus();
+    });
+  </script>
+</body>
+</html>
